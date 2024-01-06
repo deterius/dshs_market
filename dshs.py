@@ -7,6 +7,12 @@ df = pd.read_csv('data/dshs_test.csv')
 # Streamlit app layout
 st.title("Property Data Analysis")
 
+# format numbers
+def format_with_commas(number):
+    if pd.isna(number):
+        return number  # Return NaN as is
+    return "{:,.0f}".format(number)
+
 # add price per sqr footage
 df['Price Sqr Foot'] = df['price info amount value'] / df['sqft info amount value']
 
@@ -43,7 +49,7 @@ selected_columns = st.multiselect('Select columns to display', df.columns, defau
 # Dropdown for property type
 selected_prop_type = st.selectbox('Select Property Tiype', df['property type'].unique())
 # Checkbox to filter out properties with HOA fees
-exclude_hoa = st.checkbox('Exclude properties with HOA fees')
+exclude_hoa = st.checkbox('Exclude properties with HOA fees', value=True)
 
 # Filter the DataFrame based on the selection
 filtered_df = df[df['property type'] == selected_prop_type]
@@ -57,7 +63,7 @@ if exclude_hoa:
 # Display the selected columns of the DataFrame
 st.dataframe(filtered_df[selected_columns])
 st.header('Market Analytic Details')
-st.write(filtered_df.describe())
+st.write(filtered_df.describe().applymap(format_with_commas))
 
 #---- filter the baths and beds
 st.header('Average Price for House')
@@ -101,10 +107,9 @@ filtered_by_criteria = filtered_by_criteria[
 # Calculate the average price
 if not filtered_by_criteria.empty:
     average_price = filtered_by_criteria['price info amount value'].mean()
-    st.write(f"Average price for homes with {selected_beds} bedrooms, {selected_baths} bathrooms, lot size between {min_lot_size} and {max_lot_size}, and house size between {min_house_size} and {max_house_size}: ${average_price:.2f}")
-    col1, col2 = st.columns(2)
-    col1.subheader('Average Price:')
-    col2.subheader(f"${average_price:.2f}")
+    st.write(f"Average price for homes with {selected_beds} bedrooms, {selected_baths} bathrooms, lot size between {min_lot_size} and {max_lot_size}, and house size between {min_house_size} and {max_house_size}: ${average_price:,.0f}")
+    st.subheader(f"Average Price: ${average_price:,.0f}")
+  
 else:
     st.write("No homes match the selected criteria.")
 
