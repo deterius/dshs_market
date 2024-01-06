@@ -1,8 +1,8 @@
 import pandas as pd
 import streamlit as st
 import datetime as dt
-df = pd.read_excel('data/dshs_test2.xlsx')
-
+# df = pd.read_excel('data/dshs_test2.xlsx')
+df = pd.read_csv('data/dshs_test.csv')
 # Streamlit app layout
 st.title("Property Data Analysis")
 
@@ -13,6 +13,7 @@ df['Price Sqr Foot'] = df['price info amount value'] / df['sqft info amount valu
 # Assuming you want to calculate the number of days from the current date
 current_date = dt.datetime.now()
 # Calculate the number of days
+df['date added to market'] = pd.to_datetime(df['date added to market'])
 df['days since added to market'] = (current_date - df['date added to market']).dt.days
 
 df = df[['property type',
