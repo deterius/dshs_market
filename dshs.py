@@ -3,6 +3,7 @@ import streamlit as st
 import datetime as dt
 # df = pd.read_excel('data/dshs_test2.xlsx')
 df = pd.read_csv('data/dshs_test.csv')
+
 # Streamlit app layout
 st.title("Property Data Analysis")
 
@@ -56,7 +57,6 @@ if exclude_hoa:
 # Display the selected columns of the DataFrame
 st.dataframe(filtered_df[selected_columns])
 st.header('Market Analytic Details')
-
 st.write(filtered_df.describe())
 
 #---- filter the baths and beds
@@ -66,45 +66,51 @@ st.header('Average Price for House')
 selected_beds = st.selectbox('Select number of bedrooms', filtered_df['beds value'].unique())
 selected_baths = st.selectbox('Select number of bathrooms', filtered_df['baths value'].unique())
 
+
+
+# Filter the DataFrame based on the selected criteria
+filtered_by_criteria = filtered_df[
+    (filtered_df['beds value'] == selected_beds) &
+    (filtered_df['baths value'] == selected_baths)
+]
+
 # Slider for selecting lot size range
 min_lot_size, max_lot_size = st.slider(
     'Select lot size range',
-    min_value=int(filtered_df['lot size amount value'].min()),
-    max_value=int(filtered_df['lot size amount value'].max()),
-    value=(int(filtered_df['lot size amount value'].min()), int(filtered_df['lot size amount value'].max()))
+    min_value=int(filtered_by_criteria['lot size amount value'].min()),
+    max_value=int(filtered_by_criteria['lot size amount value'].max()),
+    value=(int(filtered_by_criteria['lot size amount value'].min()), int(filtered_by_criteria['lot size amount value'].max()))
 )
 
 # Slider for selecting home size range
 min_house_size, max_house_size = st.slider(
     'Select sqft info range',
-    min_value=int(filtered_df['sqft info amount value'].min()),
-    max_value=int(filtered_df['sqft info amount value'].max()),
-    value=(int(filtered_df['sqft info amount value'].min()), int(filtered_df['sqft info amount value'].max()))
+    min_value=int(filtered_by_criteria['sqft info amount value'].min()),
+    max_value=int(filtered_by_criteria['sqft info amount value'].max()),
+    value=(int(filtered_by_criteria['sqft info amount value'].min()), int(filtered_by_criteria['sqft info amount value'].max()))
 )
 
 # Filter the DataFrame based on the selected criteria
-filtered_by_criteria = filtered_df[
-    (filtered_df['beds value'] == selected_beds) &
-    (filtered_df['baths value'] == selected_baths) &
-    (filtered_df['lot size amount value'] >= min_lot_size) &
-    (filtered_df['lot size amount value'] <= max_lot_size) &
-    (filtered_df['sqft info amount value'] >= min_house_size) &
-    (filtered_df['sqft info amount value'] <= max_house_size)
+filtered_by_criteria = filtered_by_criteria[
+    (filtered_by_criteria['lot size amount value'] >= min_lot_size) &
+    (filtered_by_criteria['lot size amount value'] <= max_lot_size) &
+    (filtered_by_criteria['sqft info amount value'] >= min_house_size) &
+    (filtered_by_criteria['sqft info amount value'] <= max_house_size)
 ]
-
 
 # Calculate the average price
 if not filtered_by_criteria.empty:
     average_price = filtered_by_criteria['price info amount value'].mean()
-    st.write(f"Average price for homes with {selected_beds} bedrooms, {selected_baths} bathrooms,lot size between {min_lot_size} and {max_lot_size}, and house size between {min_house_size} and {max_house_size}: ${average_price:.2f}")
+    st.write(f"Average price for homes with {selected_beds} bedrooms, {selected_baths} bathrooms, lot size between {min_lot_size} and {max_lot_size}, and house size between {min_house_size} and {max_house_size}: ${average_price:.2f}")
     col1, col2 = st.columns(2)
     col1.subheader('Average Price:')
     col2.subheader(f"${average_price:.2f}")
 else:
     st.write("No homes match the selected criteria.")
 
-
 st.dataframe(filtered_by_criteria)
+
+
 
 #  ----------------------------------------------
 # Show sold homes only
